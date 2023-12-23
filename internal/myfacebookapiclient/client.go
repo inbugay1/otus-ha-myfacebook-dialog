@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	endpointFindUserByToken = "/user/findByToken" //nolint:gosec
+	endpointFindUserByToken = "/int/user/findByToken" //nolint:gosec
 )
 
 type HTTPAPIClient interface {

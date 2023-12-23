@@ -10,14 +10,16 @@ import (
 
 	"github.com/inbugay1/httprouter"
 	"myfacebook-dialog/internal/apiclient"
-	"myfacebook-dialog/internal/apiv1/handler"
-	"myfacebook-dialog/internal/apiv1/middleware"
+	apiv1handler "myfacebook-dialog/internal/apiv1/handler"
+	apiv1middleware "myfacebook-dialog/internal/apiv1/middleware"
 	"myfacebook-dialog/internal/config"
 	"myfacebook-dialog/internal/db"
 	"myfacebook-dialog/internal/httpclient"
 	"myfacebook-dialog/internal/httphandler"
 	httproutermiddleware "myfacebook-dialog/internal/httprouter/middleware"
 	"myfacebook-dialog/internal/httpserver"
+	internalapihandler "myfacebook-dialog/internal/internalapi/handler"
+	internalapimiddleware "myfacebook-dialog/internal/internalapi/middleware"
 	"myfacebook-dialog/internal/myfacebookapiclient"
 	"myfacebook-dialog/internal/repository/rest"
 	sqlxrepo "myfacebook-dialog/internal/repository/sqlx"
@@ -79,22 +81,44 @@ func run() error {
 	router := httprouter.New(httprouter.NewRegexRouteFactory())
 
 	requestResponseMiddleware := httproutermiddleware.NewRequestResponseLog()
-	errorResponseMiddleware := middleware.NewErrorResponse()
-	errorLogMiddleware := middleware.NewErrorLog()
-	authMiddleware := middleware.NewAuth(userRepository)
 
-	router.Use(requestResponseMiddleware, errorResponseMiddleware, errorLogMiddleware)
+	apiV1ErrorResponseMiddleware := apiv1middleware.NewErrorResponse()
+	apiV1ErrorLogMiddleware := apiv1middleware.NewErrorLog()
+	apiV1AuthMiddleware := apiv1middleware.NewAuth(userRepository)
+
+	router.Use(requestResponseMiddleware)
 
 	router.Get("/health", &httphandler.Health{})
 
 	router.Group(func(router httprouter.Router) {
-		router.Use(authMiddleware)
+		router.Use(
+			apiV1ErrorResponseMiddleware,
+			apiV1ErrorLogMiddleware,
+			apiV1AuthMiddleware,
+		)
 
-		router.Post(`/dialog/{user_id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/send`, &handler.SendDialog{
+		router.Post(`/dialog/{user_id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/send`,
+			&apiv1handler.SendDialog{
+				DialogRepository: dialogRepository,
+			})
+
+		router.Get(`/dialog/{user_id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/list`,
+			&apiv1handler.ListDialog{
+				DialogRepository: dialogRepository,
+			})
+	})
+
+	internalAPIErrorResponseMiddleware := internalapimiddleware.NewErrorResponse()
+	internalAPIErrorLogMiddleware := internalapimiddleware.NewErrorLog()
+
+	router.Group(func(router httprouter.Router) {
+		router.Use(internalAPIErrorResponseMiddleware, internalAPIErrorLogMiddleware)
+
+		router.Post("/int/dialog/send", &internalapihandler.SendDialog{
 			DialogRepository: dialogRepository,
 		})
 
-		router.Get(`/dialog/{user_id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/list`, &handler.ListDialog{
+		router.Get("/int/dialog/list", &internalapihandler.ListDialog{
 			DialogRepository: dialogRepository,
 		})
 	})

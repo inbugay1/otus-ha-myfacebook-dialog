@@ -39,7 +39,7 @@ func (r *DialogRepository) GetDialogMessagesBySenderIDAndReceiverID(ctx context.
 
 	var dialogMessages []repository.DialogMessage
 
-	sqlQuery := `SELECT sender_id, receiver_id, text 
+	sqlQuery := `SELECT id, sender_id, receiver_id, text 
 		FROM dialogs WHERE sender_id=$1 AND receiver_id=$2`
 
 	err := dbConn.SelectContext(ctx, &dialogMessages, sqlQuery, senderID, receiverID)
