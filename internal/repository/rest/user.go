@@ -33,3 +33,18 @@ func (r *UserRepository) GetUserByToken(ctx context.Context, token string) (*rep
 		ID: user.ID,
 	}, nil
 }
+
+func (r *UserRepository) GetUserByID(ctx context.Context, userID string) (*repository.User, error) {
+	user, err := r.apiClient.GetUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, myfacebookapiclient.ErrNotFound) {
+			return nil, repository.ErrNotFound
+		}
+
+		return nil, fmt.Errorf("userrepository failed to get user by id: %w", err)
+	}
+
+	return &repository.User{
+		ID: user.ID,
+	}, nil
+}

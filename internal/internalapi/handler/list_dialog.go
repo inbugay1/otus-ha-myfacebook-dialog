@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"myfacebook-dialog/internal/internalapi"
 	"myfacebook-dialog/internal/repository"
@@ -74,8 +75,17 @@ func (h *ListDialog) validateListDialogRequest(listDialogReq listDialogRequest) 
 		return internalapi.NewInvalidRequestErrorMissingRequiredParameter("from")
 	}
 
+	uuidv4Regexp := regexp.MustCompile(`(?i)^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89ab][a-f\d]{3}-[a-f\d]{12}$`)
+	if !uuidv4Regexp.MatchString(listDialogReq.From) {
+		return internalapi.NewInvalidRequestErrorInvalidParameter("from", nil)
+	}
+
 	if listDialogReq.To == "" {
 		return internalapi.NewInvalidRequestErrorMissingRequiredParameter("to")
+	}
+
+	if !uuidv4Regexp.MatchString(listDialogReq.To) {
+		return internalapi.NewInvalidRequestErrorInvalidParameter("to", nil)
 	}
 
 	return nil

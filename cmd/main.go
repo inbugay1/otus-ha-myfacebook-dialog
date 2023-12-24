@@ -137,6 +137,7 @@ func run() error {
 
 		router.Post("/int/dialog/send", &internalapihandler.SendDialog{
 			DialogRepository: dialogRepository,
+			UserRepository:   userRepository,
 		}, "")
 
 		router.Get("/int/dialog/list", &internalapihandler.ListDialog{
