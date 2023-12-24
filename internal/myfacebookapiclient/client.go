@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	endpointFindUserByToken = "/int/user/findByToken" //nolint:gosec
-	endpointGetUserByID     = "/int/user/%s"
+	endpointFindUserByToken   = "/int/user/findByToken" //nolint:gosec
+	endpointGetUserByID       = "/int/user/%s"
+	endpointSendDialogMessage = "/int/dialog/send"
 )
 
 type HTTPAPIClient interface {
@@ -75,4 +76,23 @@ func (c *Client) GetUserByID(ctx context.Context, userID string) (*User, error) 
 	}
 
 	return nil, ErrUnexpectedStatusCode
+}
+
+func (c *Client) SendDialogMessage(ctx context.Context, senderID, receiverID, message string) error {
+	response, err := c.apiClient.Post(ctx, endpointSendDialogMessage, map[string]string{
+		"from": senderID,
+		"to":   receiverID,
+		"text": message,
+	})
+	if err != nil {
+		return fmt.Errorf("myfacebookapiclient failed to send dialog message: %w", err)
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return ErrUnexpectedStatusCode
+	}
+
+	return nil
 }

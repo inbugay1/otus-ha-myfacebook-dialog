@@ -120,7 +120,8 @@ func run() error {
 
 		router.Post(`/dialog/{user_id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/send`,
 			&apiv1handler.SendDialog{
-				DialogRepository: dialogRepository,
+				DialogRepository:    dialogRepository,
+				MyfacebookAPIClient: myfacebookAPIClient,
 			}, "/dialog/{user_id}/send")
 
 		router.Get(`/dialog/{user_id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/list`,
@@ -138,10 +139,6 @@ func run() error {
 		router.Post("/int/dialog/send", &internalapihandler.SendDialog{
 			DialogRepository: dialogRepository,
 			UserRepository:   userRepository,
-		}, "")
-
-		router.Get("/int/dialog/list", &internalapihandler.ListDialog{
-			DialogRepository: dialogRepository,
 		}, "")
 	})
 
