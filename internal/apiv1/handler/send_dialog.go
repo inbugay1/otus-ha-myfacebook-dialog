@@ -7,13 +7,11 @@ import (
 
 	"github.com/inbugay1/httprouter"
 	"myfacebook-dialog/internal/apiv1"
-	"myfacebook-dialog/internal/myfacebookapiclient"
 	"myfacebook-dialog/internal/repository"
 )
 
 type SendDialog struct {
-	DialogRepository    repository.DialogRepository
-	MyfacebookAPIClient *myfacebookapiclient.Client
+	DialogRepository repository.DialogRepository
 }
 
 type sendDialogRequest struct {
@@ -35,20 +33,15 @@ func (h *SendDialog) Handle(responseWriter http.ResponseWriter, request *http.Re
 	ctx := request.Context()
 
 	senderID := ctx.Value("user_id").(string)
-	receiverID := httprouter.RouteParam(ctx, "user_id") // todo validate
+	receiverID := httprouter.RouteParam(ctx, "user_id")
 
-	dialogMsg := repository.DialogMessage{
+	dialogMessage := repository.DialogMessage{
 		From: senderID,
 		To:   receiverID,
 		Text: sendDialogReq.Text,
 	}
 
-	err := h.MyfacebookAPIClient.SendDialogMessage(ctx, dialogMsg.From, dialogMsg.To, dialogMsg.Text)
-	if err != nil {
-		return apiv1.NewServerError(fmt.Errorf("send dialog handler, failed to send dialog message via myfacebook api client: %w", err))
-	}
-
-	err = h.DialogRepository.Add(ctx, dialogMsg)
+	err := h.DialogRepository.Add(ctx, dialogMessage)
 	if err != nil {
 		return apiv1.NewServerError(fmt.Errorf("send dialog handler, failed to add dialog message to repository: %w", err))
 	}
