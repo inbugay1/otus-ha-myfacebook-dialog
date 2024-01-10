@@ -17,7 +17,7 @@
 * DB_DRIVER_NAME - Драйвер БД. По умолчанию postgres
 * DB_SSL_MODE - Режим работы ssl для postgres. По умолчанию disable
 * DB_MAX_OPEN_CONNECTIONS - Число максимально одновременно открытых подключений. По умолчанию: 10
-* MYFACEBOOK_API_BASE_URL - Адрес монолита. По умолчанию localhost:9090
+* MYFACEBOOK_API_BASE_URL - Адрес монолита. По умолчанию localhost:9092
 * OTEL_EXPORTER_TYPE - Экспортер трассировок, доступны значения: otel_http,
   stdout. По умолчанию: stdout
 * OTEL_EXPORTER_OTLP_ENDPOINT - адрес коллектора, работающего по протоколу OTLP over http. По умолчанию: localhost:4318
